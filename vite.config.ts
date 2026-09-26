@@ -131,4 +131,12 @@ function localJev(env: Record<string, string>): Plugin {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [react(), localJev(loadEnv(mode, process.cwd(), ''))],
+  server: {
+    // Route /api (including JevLens's POST /api/jev) to the local Jev server
+    // in server/ (npm run dev:server), which holds the TypeSafe key.
+    // /api/jev/latest and /api/jev/run are answered by localJev above first.
+    proxy: {
+      '/api': 'http://127.0.0.1:8787',
+    },
+  },
 }))

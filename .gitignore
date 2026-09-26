@@ -28,3 +28,6 @@ dist-ssr
 # Local Jev runs (read by /result in dev)
 jev-output/
 jev-input/
+
+# Local secrets
+.env
