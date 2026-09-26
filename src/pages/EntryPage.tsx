@@ -1,84 +1,247 @@
-import { useState, type FormEvent } from "react";
-import WeatherCard from "../components/WeatherCard";
-import { callJev, type JevResult } from "../services/jev";
-import type { WeatherContext } from "../types/weather";
+import JevLens from "../components/JevLens";
+import { useState } from "react";
+import {
+  addTodayExerciseEntry,
+  addTodayFoodEntry,
+  addTodayWeightEntry,
+  deleteTodayLogEntry,
+  loadTodayEntry,
+  updateTodayLogEntry,
+} from "../services/entryStorage";
+import type { EntryStep, LogCollection, LogEntry } from "../types/entry";
+import { getTimeOfDaySentence } from "../utils/timeOfDay";
 
-function label(value: string) {
-  return value.replaceAll("_", " ");
-}
+const steps: { id: EntryStep; label: string }[] = [
+  { id: "weight", label: "Weight" },
+  { id: "exercise", label: "Exercise" },
+  { id: "food", label: "Food" },
+];
 
 function EntryPage() {
-  const [userText, setUserText] = useState("");
-  const [weather, setWeather] = useState<WeatherContext | null>(null);
-  const [result, setResult] = useState<JevResult | null>(null);
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [activeStep, setActiveStep] = useState<EntryStep>("weight");
+  const [entryValues, setEntryValues] = useState(() => loadTodayEntry());
+  const [weightInput, setWeightInput] = useState("");
+  const [exerciseInput, setExerciseInput] = useState("");
+  const [foodInput, setFoodInput] = useState("");
+  const [editing, setEditing] = useState<{
+    collection: LogCollection;
+    id: string;
+    text: string;
+  } | null>(null);
 
-  async function submitDay(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!userText.trim() || submitting) return;
-    setSubmitting(true);
-    setError("");
-    setResult(null);
-    try {
-      setResult(await callJev({ userText: userText.trim(), weather }));
-    } catch (failure) {
-      setError(failure instanceof Error && failure.message.startsWith("Jev ")
-        ? failure.message
-        : "Jev is unavailable right now. Please try again later.");
-    } finally {
-      setSubmitting(false);
+  function addWeightEntry() {
+    const next = addTodayWeightEntry(weightInput);
+    setEntryValues(next);
+    setWeightInput("");
+  }
+
+  function addExerciseEntry() {
+    const next = addTodayExerciseEntry(exerciseInput);
+    setEntryValues(next);
+    setExerciseInput("");
+  }
+
+  function addFoodEntry() {
+    const next = addTodayFoodEntry(foodInput);
+    setEntryValues(next);
+    setFoodInput("");
+  }
+
+  function startEdit(collection: LogCollection, item: LogEntry) {
+    setEditing({
+      collection,
+      id: item.id,
+      text: item.text,
+    });
+  }
+
+  function saveEdit() {
+    if (!editing) {
+      return;
+    }
+
+    const next = updateTodayLogEntry(editing.collection, editing.id, editing.text);
+    setEntryValues(next);
+    setEditing(null);
+  }
+
+  function removeEntry(collection: LogCollection, id: string) {
+    const next = deleteTodayLogEntry(collection, id);
+    setEntryValues(next);
+    if (editing?.id === id && editing.collection === collection) {
+      setEditing(null);
     }
   }
 
-  return (
-    <section className="page entry-page">
-      <h1>JevLens</h1>
-      <p>Your day in. What matters out.</p>
-      <form className="entry-form" onSubmit={submitDay}>
-        <label htmlFor="day-entry">Tell us what happened. Jev decides what matters.</label>
-        <textarea
-          id="day-entry"
-          value={userText}
-          onChange={(event) => setUserText(event.target.value)}
-          placeholder="Worked from home for 8 hours, had lunch, and haven't really moved..."
-          rows={5}
-          required
-        />
-        <button type="submit" disabled={submitting || !userText.trim()}>
-          {submitting ? "Thinking..." : "Get my nudge"}
-        </button>
-      </form>
+  function formatClock(isoString: string): string {
+    return new Date(isoString).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
 
-      {error && <p className="entry-error" role="alert">{error}</p>}
-      {result && (
-        <section className="jev-result" aria-label="Jev's nudge">
-          <span className="jev-eyebrow">Jev's nudge</span>
-          <h2>{result.recommendation}</h2>
-          <details className="jev-trace">
-            <summary>Why this suggestion?</summary>
-            <div className="jev-trace-body">
-              <h3>Signals detected</h3>
-              {result.signals.length ? (
-                <ul>{result.signals.map((signal, index) => <li key={`${signal}-${index}`}>{label(signal)}</li>)}</ul>
-              ) : <p>No signals reported.</p>}
-              <h3>Decision</h3>
-              <p>{label(result.decision.intervention)}</p>
-              <h3>Weather used</h3>
-              <p>{result.decision.useWeather ? "Yes" : "No"}</p>
-              <h3>Why</h3>
-              <p>{result.reason}</p>
-              {result.avoided.length > 0 && (
+  function renderHistory(collection: LogCollection, items: LogEntry[], emptyLabel: string) {
+    if (items.length === 0) {
+      return (
+        <div className="food-log" aria-live="polite">
+          <p>{emptyLabel}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="food-log" aria-live="polite">
+        {items.map((entry) => {
+          const isEditing = editing?.id === entry.id && editing.collection === collection;
+
+          return (
+            <div key={entry.id} className="food-item editable-item">
+              {isEditing ? (
                 <>
-                  <h3>Jev avoided</h3>
-                  <ul>{result.avoided.map((item, index) => <li key={`${item}-${index}`}>{label(item)}</li>)}</ul>
+                  <input
+                    className="inline-edit-input"
+                    type="text"
+                    value={editing.text}
+                    onChange={(event) =>
+                      setEditing((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              text: event.target.value,
+                            }
+                          : prev,
+                      )
+                    }
+                  />
+                  <div className="item-controls">
+                    <button type="button" className="mini-btn" onClick={saveEdit}>
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="mini-btn ghost"
+                      onClick={() => setEditing(null)}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <p>{entry.text}</p>
+                    <span>{formatClock(entry.createdAt)}</span>
+                  </div>
+                  <div className="item-controls">
+                    <button
+                      type="button"
+                      className="mini-btn"
+                      onClick={() => startEdit(collection, entry)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="mini-btn ghost"
+                      onClick={() => removeEntry(collection, entry.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </>
               )}
             </div>
-          </details>
-        </section>
-      )}
-      <WeatherCard onWeatherLoaded={setWeather} />
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <section className="page">
+      <h1>Entry</h1>
+      <p className="time-note">{getTimeOfDaySentence()}</p>
+
+      <div className="step-switcher" role="tablist" aria-label="Entry section">
+        {steps.map((step) => (
+          <button
+            key={step.id}
+            type="button"
+            role="tab"
+            aria-selected={activeStep === step.id}
+            className={`step-btn ${activeStep === step.id ? "active" : ""}`}
+            onClick={() => setActiveStep(step.id)}
+          >
+            {step.label}
+          </button>
+        ))}
+      </div>
+
+      <form className="entry-form" onSubmit={(event) => event.preventDefault()}>
+        {activeStep === "weight" && (
+          <div className="field-group big-card">
+            <p>What is your weight right now?</p>
+            <input
+              className="big-input"
+              type="text"
+              inputMode="decimal"
+              placeholder="e.g. 182 lb or 82.5 kg"
+              value={weightInput}
+              onChange={(event) => setWeightInput(event.target.value)}
+            />
+            <button type="button" className="action-btn" onClick={addWeightEntry}>
+              Add weigh-in
+            </button>
+            {renderHistory("weightEntries", entryValues.weightEntries, "No weigh-ins yet today.")}
+          </div>
+        )}
+
+        {activeStep === "exercise" && (
+          <div className="field-group big-card">
+            <p>What did you do for exercise?</p>
+            <textarea
+              className="big-input"
+              rows={5}
+              placeholder="Leg day: 5x5 squats, 20 min incline walk"
+              value={exerciseInput}
+              onChange={(event) => setExerciseInput(event.target.value)}
+            />
+            <button type="button" className="action-btn" onClick={addExerciseEntry}>
+              Add exercise entry
+            </button>
+            {renderHistory(
+              "exerciseEntries",
+              entryValues.exerciseEntries,
+              "No exercise entries yet today.",
+            )}
+          </div>
+        )}
+
+        {activeStep === "food" && (
+          <div className="field-group big-card">
+            <p>Log food as it happens</p>
+            <div className="inline-input-row">
+              <input
+                className="big-input"
+                type="text"
+                placeholder="e.g. Greek yogurt + berries"
+                value={foodInput}
+                onChange={(event) => setFoodInput(event.target.value)}
+              />
+              <button
+                type="button"
+                className="action-btn compact"
+                onClick={addFoodEntry}
+              >
+                Add
+              </button>
+            </div>
+
+            {renderHistory("foodEntries", entryValues.foodEntries, "No food logged yet today.")}
+          </div>
+        )}
+      </form>
+      <JevLens />
     </section>
   );
 }
