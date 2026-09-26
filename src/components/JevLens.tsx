@@ -32,8 +32,8 @@ export default function JevLens() {
   }
 
   return (
-    <section className="jev-lens" aria-label="JevLens">
-      <h2>JevLens</h2>
+    <section className="jev-lens" aria-label="HitTheGym">
+      <h2>HitTheGym</h2>
       <p>Your day in. What matters out.</p>
       <form className="jev-form" onSubmit={submitDay}>
         <label htmlFor="day-entry">Tell us what happened. Jev decides what matters.</label>

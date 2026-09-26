@@ -5,7 +5,7 @@ Powered by [Jev](https://docs.typesafe.ai) (TypeSafe System One).
 
 React + TypeScript + Vite.
 
-The Entry screen is JevLens: "Your day in. What matters out." Weather is optional context for a Jev decision, not a prerequisite for submitting a day.
+The Entry screen is HitTheGym: "Your day in. What matters out." Weather is optional context for a Jev decision, not a prerequisite for submitting a day.
 
 ## Jev integration
 
