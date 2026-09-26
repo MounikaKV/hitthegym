@@ -1,6 +1,7 @@
 import type { DailyEntry, LogCollection, LogEntry } from "../types/entry";
 
 const STORAGE_KEY = "hitthegym.entries.v1";
+const DEMO_SEEDED_KEY = "hitthegym.entries.demoSeeded.v1";
 
 type EntryMap = Record<string, DailyEntry>;
 
@@ -27,6 +28,143 @@ function readMap(): EntryMap {
 
 function writeMap(map: EntryMap): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+}
+
+function getDateKeyFromDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomPick<T>(items: T[]): T {
+  return items[randomInt(0, items.length - 1)];
+}
+
+function createDemoTimestamp(
+  daysAgo: number,
+  minHour: number,
+  maxHour: number,
+): string {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() - daysAgo);
+  date.setHours(
+    randomInt(minHour, maxHour),
+    randomInt(0, 59),
+    randomInt(0, 59),
+    0,
+  );
+
+  return date.toISOString();
+}
+
+function createDemoLogEntries(
+  dateKey: string,
+  daysAgo: number,
+  count: number,
+  minHour: number,
+  maxHour: number,
+  textFactory: (index: number) => string,
+  prefix: string,
+): LogEntry[] {
+  const entries = Array.from({ length: count }, (_, index) => {
+    const createdAt = createDemoTimestamp(daysAgo, minHour, maxHour);
+
+    return {
+      id: `${prefix}-${dateKey}-${index}-${Math.random().toString(36).slice(2, 8)}`,
+      text: textFactory(index),
+      createdAt,
+    } satisfies LogEntry;
+  });
+
+  return entries.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
+function buildDemoDay(date: Date, daysAgo: number): DailyEntry {
+  const dateKey = getDateKeyFromDate(date);
+  const baseWeight = 178 + randomInt(-7, 7);
+  const exerciseSamples = [
+    "Upper body session, 45 min",
+    "Lower body session, 50 min",
+    "Full body circuit, 35 min",
+    "Zone 2 cardio, 30 min",
+    "Mobility + core, 25 min",
+    "Restorative walk, 40 min",
+  ];
+  const foodSamples = [
+    "Overnight oats + banana",
+    "Greek yogurt + berries",
+    "Chicken bowl with rice",
+    "Protein shake + peanut butter toast",
+    "Salmon, potatoes, mixed greens",
+    "Egg scramble + avocado",
+    "Turkey sandwich + fruit",
+  ];
+
+  const weightEntries = createDemoLogEntries(
+    dateKey,
+    daysAgo,
+    randomInt(1, 3),
+    6,
+    20,
+    (index) => `${(baseWeight + index * 0.2).toFixed(1)} lb`,
+    "demo-weight",
+  );
+
+  const exerciseEntries = createDemoLogEntries(
+    dateKey,
+    daysAgo,
+    randomInt(0, 2),
+    7,
+    21,
+    () => randomPick(exerciseSamples),
+    "demo-exercise",
+  );
+
+  const foodEntries = createDemoLogEntries(
+    dateKey,
+    daysAgo,
+    randomInt(2, 5),
+    7,
+    22,
+    () => randomPick(foodSamples),
+    "demo-food",
+  );
+
+  return {
+    dateKey,
+    weightEntries,
+    exerciseEntries,
+    foodEntries,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+export function ensureDemoHistorySeeded(): void {
+  if (localStorage.getItem(DEMO_SEEDED_KEY) === "1") {
+    return;
+  }
+
+  const map = readMap();
+
+  for (let daysAgo = 0; daysAgo < 21; daysAgo += 1) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    const dateKey = getDateKeyFromDate(date);
+
+    if (!map[dateKey]) {
+      map[dateKey] = buildDemoDay(date, daysAgo);
+    }
+  }
+
+  writeMap(map);
+  localStorage.setItem(DEMO_SEEDED_KEY, "1");
 }
 
 function createEmptyDay(dateKey: string): DailyEntry {
