@@ -106,14 +106,14 @@ function stepsTile(a: HealthAnswers, day?: DailyState): Tile | undefined {
   const push = a.needs_step_push;
   const steps = day?.activity?.steps_so_far_today;
   const goal = day?.profile?.daily_step_goal;
-  if (!push && steps === undefined) return undefined;
-  const behind = push ? push.noul >= 0.5 : goal !== undefined && steps! < goal;
-  const pct = steps !== undefined && goal ? steps / goal : undefined;
-  const tone: Tone = !behind ? 'good' : pct !== undefined && pct >= 0.5 ? 'okay' : 'bad';
+  if (!push && steps == null) return undefined;
+  const behind = push ? push.noul >= 0.5 : goal != null && steps! < goal;
+  const pct = steps != null && goal ? steps / goal : undefined;
+  const tone: Tone = !behind ? 'good' : pct != null && pct >= 0.5 ? 'okay' : 'bad';
   return {
     key: 'steps',
     label: 'Steps',
-    value: steps !== undefined ? nf.format(steps) : behind ? 'Behind' : 'On pace',
+    value: steps != null ? nf.format(steps) : behind ? 'Behind' : 'On pace',
     detail: goal ? `of ${nf.format(goal)}` : undefined,
     tone,
     sure: push ? noulSure(push.noul) : true,
@@ -139,10 +139,10 @@ export function buildBriefing(a: HealthAnswers, day?: DailyState): Briefing {
   const stepGoal = day?.profile?.daily_step_goal;
 
   if (a.needs_step_push && a.needs_step_push.noul >= 0.5) {
-    const left = steps !== undefined && stepGoal ? Math.max(0, stepGoal - steps) : undefined;
+    const left = steps != null && stepGoal ? Math.max(0, stepGoal - steps) : undefined;
     directions.push({
       text: left ? `Walk ${nf.format(Math.ceil(left / 100) * 100)} more steps today` : 'Get your steps in today',
-      hint: steps !== undefined && stepGoal ? `${nf.format(steps)} / ${nf.format(stepGoal)}` : undefined,
+      hint: steps != null && stepGoal ? `${nf.format(steps)} / ${nf.format(stepGoal)}` : undefined,
       sure: noulSure(a.needs_step_push.noul),
     });
   }
@@ -158,7 +158,7 @@ export function buildBriefing(a: HealthAnswers, day?: DailyState): Briefing {
     directions.push({ text: 'Move for 20 minutes tomorrow', sure: a.exercise_intensity.confidence >= SURE });
   }
   const sleep = day?.activity?.sleep_hours_last_night;
-  if (sleep !== undefined && sleep < 7) {
+  if (sleep != null && sleep < 7) {
     directions.push({ text: 'In bed 30 minutes earlier tonight', hint: `${sleep} h last night`, sure: true });
   }
   if (directions.length === 0) directions.push({ text: 'Same again tomorrow', sure: true });
@@ -170,7 +170,7 @@ export function buildBriefing(a: HealthAnswers, day?: DailyState): Briefing {
   const start = day?.profile?.starting_weight_lbs;
   const goal = day?.profile?.goal_weight_lbs;
   const now = day?.weight?.today_lbs;
-  if (start !== undefined && goal !== undefined && now !== undefined && start !== goal) {
+  if (start != null && goal != null && now != null && start !== goal) {
     const pct = Math.max(0, Math.min(1, (start - now) / (start - goal)));
     progress = { start, now, goal, pct, toGo: Math.max(0, now - goal) };
   }

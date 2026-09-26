@@ -1,4 +1,4 @@
-import type { ResultPayload } from '../types/jev';
+import type { DailyState, ResultPayload } from '../types/jev';
 
 /**
  * How Jev's output gets to the result page. Three ways in, checked in order:
@@ -62,4 +62,12 @@ export function loadSavedPayload(): ResultPayload | null {
   } catch {
     return null;
   }
+}
+
+/** Set by the Review page's "Get my verdict": wait for a Jev run newer than `since`. */
+export type PendingRun = { since: string; day: DailyState };
+
+export function readPendingRun(state: unknown): PendingRun | null {
+  const pending = (state as { pending?: PendingRun } | null)?.pending;
+  return pending && typeof pending.since === 'string' ? pending : null;
 }

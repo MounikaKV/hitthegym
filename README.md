@@ -16,6 +16,7 @@ npm run dev        # http://localhost:5173
 | ----------- | ---------------------------------------------------------------------- |
 | `/`         | App home (with bottom nav: Landing, Entry, Stats, Settings)            |
 | `/entry`    | Input: log weight, exercise and food                                    |
+| `/review`   | The day's data package for Jev, plus **Get my verdict →**              |
 | `/pitch`    | Pitch / landing page. Every "Try it" button goes to `/entry`           |
 | `/result`   | Output page. Renders any Jev response it's handed                       |
 
@@ -76,3 +77,16 @@ With `npm run dev` running, open `/result` with nothing passed in and it shows t
 - Change the folder with `JEV_OUTPUT_DIR=path npm run dev`. `jev-output/` is gitignored.
 
 A result passed explicitly (router state or `?d=`) still takes priority over the folder.
+
+## End-to-end flow (local)
+
+1. Log the day on `/entry`.
+2. On `/review`, press **Get my verdict →**. The day's payload is saved to `jev-input/latest.json`
+   (plus a timestamped copy) and the app opens `/result`, which shows "Asking Jev…".
+3. Jev produces a run in `jev-output/`:
+   - **Automatically**, if `TYPESAFE_API_KEY=...` is in `.env.local`: the dev server calls Jev with the
+     questions in `src/data/questions.ts` and writes `{ jev, day }` to `jev-output/run-<time>.json`.
+   - **Or** any local Jev script that reads `jev-input/latest.json` and writes its response to `jev-output/`.
+4. `/result` picks up the first run newer than the click and shows it with the day's numbers.
+
+The API key stays on the dev server (never sent to the browser).

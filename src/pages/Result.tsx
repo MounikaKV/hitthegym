@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import '../styles/pitch.css';
 import { BriefingCard } from '../components/BriefingCard';
 import { InputLink } from '../components/InputLink';
 import { JevAnswers } from '../components/JevAnswers';
 import { SAMPLES } from '../data/samples';
 import { fetchLatestJev, onJevUpdate, toPayload, type LocalJev } from '../services/localJev';
-import { decodePayload, encodePayload, loadSavedPayload, readStatePayload, resultPath, savePayload } from '../services/handoff';
+import {
+  decodePayload,
+  encodePayload,
+  loadSavedPayload,
+  readPendingRun,
+  readStatePayload,
+  resultPath,
+  savePayload,
+} from '../services/handoff';
+import { PITCH_PATH } from '../config';
 import { buildBriefing } from '../utils/briefing';
 import { parseJev } from '../utils/parseJev';
 
@@ -15,7 +24,9 @@ import { parseJev } from '../utils/parseJev';
  *
  * Where the result comes from, in order:
  *   1. Passed in explicitly: router state or ?d= (see services/handoff.ts)
- *   2. The newest JSON in the local Jev output folder (dev server, live-updating)
+ *   2. The newest JSON in the local Jev output folder (dev server, live-updating).
+ *      After "Get my verdict" on the Review page, only a run newer than the click
+ *      counts, and the day's state is attached if the file doesn't include it.
  *   3. The last result shown in this tab
  */
 function Result() {
@@ -49,10 +60,15 @@ function Result() {
     };
   }, [explicit]);
 
-  const localPayload = useMemo(() => (local ? toPayload(local.data) : null), [local]);
+  const pending = useMemo(() => readPendingRun(location.state), [location.state]);
+  const localPayload = useMemo(() => {
+    if (!local || (pending && local.modified < pending.since)) return null;
+    const p = toPayload(local.data);
+    return p.day || !pending ? p : { ...p, day: pending.day };
+  }, [local, pending]);
   const payload = useMemo(
-    () => explicit ?? localPayload ?? (localChecked ? loadSavedPayload() : null),
-    [explicit, localPayload, localChecked],
+    () => explicit ?? localPayload ?? (localChecked && !pending ? loadSavedPayload() : null),
+    [explicit, localPayload, localChecked, pending],
   );
   const answers = useMemo(() => (payload ? parseJev(payload.jev) : null), [payload]);
   const briefing = useMemo(() => (answers ? buildBriefing(answers, payload?.day) : null), [answers, payload]);
@@ -73,6 +89,7 @@ function Result() {
   }, [briefing]);
 
   if (!explicit && !localChecked) return <div className="htg result result--empty" aria-busy="true" />;
+  if (pending && !localPayload) return <WaitingForJev />;
   if (!briefing || !answers) return <EmptyResult broken={!!payload} />;
 
   async function share() {
@@ -92,7 +109,7 @@ function Result() {
   return (
     <div className="htg result" data-tone={briefing.tone}>
       <nav className="nav">
-        <Link to="/pitch" className="nav__logo">
+        <Link to={PITCH_PATH} className="nav__logo">
           HitTheGym
         </Link>
         {briefing.date && <span className="result__date">{formatDate(briefing.date)}</span>}
@@ -133,11 +150,31 @@ function formatDate(iso: string) {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+function WaitingForJev() {
+  const navigate = useNavigate();
+  return (
+    <div className="htg result result--empty" aria-busy="true">
+      <nav className="nav">
+        <Link to={PITCH_PATH} className="nav__logo">
+          HitTheGym
+        </Link>
+      </nav>
+      <main className="result__main">
+        <h1 className="empty__title waiting">Asking Jev…</h1>
+        <p className="empty__sub">Your day is saved to jev-input/. This page updates as soon as a new run lands in jev-output/.</p>
+        <button type="button" className="btn btn--outline" onClick={() => navigate('/result', { replace: true })}>
+          Show the last result instead
+        </button>
+      </main>
+    </div>
+  );
+}
+
 function EmptyResult({ broken }: { broken: boolean }) {
   return (
     <div className="htg result result--empty">
       <nav className="nav">
-        <Link to="/pitch" className="nav__logo">
+        <Link to={PITCH_PATH} className="nav__logo">
           HitTheGym
         </Link>
       </nav>
