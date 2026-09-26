@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local Jev runs (read by /result in dev)
+jev-output/

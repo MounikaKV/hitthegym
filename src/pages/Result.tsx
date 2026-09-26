@@ -5,13 +5,18 @@ import { BriefingCard } from '../components/BriefingCard';
 import { InputLink } from '../components/InputLink';
 import { JevAnswers } from '../components/JevAnswers';
 import { SAMPLES } from '../data/samples';
+import { fetchLatestJev, onJevUpdate, toPayload, type LocalJev } from '../services/localJev';
 import { decodePayload, encodePayload, loadSavedPayload, readStatePayload, resultPath, savePayload } from '../services/handoff';
 import { buildBriefing } from '../utils/briefing';
 import { parseJev } from '../utils/parseJev';
 
 /**
  * The output page. Needs a Jev response; the day's state is optional.
- * See services/handoff.ts for the ways a result can arrive.
+ *
+ * Where the result comes from, in order:
+ *   1. Passed in explicitly: router state or ?d= (see services/handoff.ts)
+ *   2. The newest JSON in the local Jev output folder (dev server, live-updating)
+ *   3. The last result shown in this tab
  */
 function Result() {
   const location = useLocation();
@@ -19,19 +24,46 @@ function Result() {
   const [copied, setCopied] = useState(false);
   const encoded = params.get('d');
 
-  const payload = useMemo(
-    () => readStatePayload(location.state) ?? (encoded ? decodePayload(encoded) : null) ?? loadSavedPayload(),
+  const explicit = useMemo(
+    () => readStatePayload(location.state) ?? (encoded ? decodePayload(encoded) : null),
     [location.state, encoded],
+  );
+
+  // Latest local Jev run, re-read whenever a file in the folder changes.
+  const [local, setLocal] = useState<LocalJev | null>(null);
+  const [localChecked, setLocalChecked] = useState(false);
+  useEffect(() => {
+    if (explicit) return;
+    let alive = true;
+    const load = () =>
+      fetchLatestJev().then((latest) => {
+        if (!alive) return;
+        setLocal(latest);
+        setLocalChecked(true);
+      });
+    load();
+    const off = onJevUpdate(load);
+    return () => {
+      alive = false;
+      off();
+    };
+  }, [explicit]);
+
+  const localPayload = useMemo(() => (local ? toPayload(local.data) : null), [local]);
+  const payload = useMemo(
+    () => explicit ?? localPayload ?? (localChecked ? loadSavedPayload() : null),
+    [explicit, localPayload, localChecked],
   );
   const answers = useMemo(() => (payload ? parseJev(payload.jev) : null), [payload]);
   const briefing = useMemo(() => (answers ? buildBriefing(answers, payload?.day) : null), [answers, payload]);
+  const fromLocal = !explicit && !!local && payload === localPayload;
 
-  // Keep the URL shareable and the result around for a refresh.
+  // Remember the result for a refresh; make router-state results shareable by URL.
   useEffect(() => {
     if (!payload || !answers) return;
     savePayload(payload);
-    if (!encoded) setParams({ d: encodePayload(payload) }, { replace: true, state: location.state });
-  }, [payload, answers, encoded, setParams, location.state]);
+    if (explicit && !encoded) setParams({ d: encodePayload(payload) }, { replace: true, state: location.state });
+  }, [payload, answers, explicit, encoded, setParams, location.state]);
 
   useEffect(() => {
     document.body.dataset.tone = briefing?.tone ?? '';
@@ -40,10 +72,11 @@ function Result() {
     };
   }, [briefing]);
 
+  if (!explicit && !localChecked) return <div className="htg result result--empty" aria-busy="true" />;
   if (!briefing || !answers) return <EmptyResult broken={!!payload} />;
 
   async function share() {
-    const url = window.location.href;
+    const url = `${window.location.origin}${resultPath(payload!)}`;
     try {
       if (navigator.share) await navigator.share({ title: 'HitTheGym', text: `${briefing!.word} ${briefing!.headline}`, url });
       else {
@@ -66,8 +99,15 @@ function Result() {
       </nav>
 
       <main className="result__main">
-        <BriefingCard key={encoded ?? briefing.word} briefing={briefing} />
-        <JevAnswers answers={answers} />
+        <BriefingCard key={fromLocal ? local!.modified : (encoded ?? briefing.word)} briefing={briefing} />
+        <div className="result__meta">
+          <JevAnswers answers={answers} />
+          {fromLocal && (
+            <p className="result__source" title={local!.modified}>
+              {local!.seeded ? 'Sample run' : 'Latest Jev run'} · jev-output/{local!.file} · {timeAgo(local!.modified)}
+            </p>
+          )}
+        </div>
       </main>
 
       <footer className="result__actions">
@@ -78,6 +118,14 @@ function Result() {
       </footer>
     </div>
   );
+}
+
+function timeAgo(iso: string) {
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (!Number.isFinite(mins) || mins < 1) return 'just now';
+  if (mins < 60) return `${mins} min ago`;
+  const hours = Math.round(mins / 60);
+  return hours < 24 ? `${hours} h ago` : new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function formatDate(iso: string) {

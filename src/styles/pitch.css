@@ -419,7 +419,17 @@ body[data-tone='neutral'], .result[data-tone='neutral'] { background: var(--neut
   padding: 8px 16px 40px;
 }
 
-.jev { margin-top: 14px; }
+.result__meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 4px 16px;
+  margin-top: 14px;
+}
+.result__meta .jev { flex: 1 1 100%; order: 2; }
+.result__source { margin: 0; padding: 4px 0; font-size: 0.85rem; opacity: 0.85; order: 1; }
+.jev { margin-top: 0; }
 .jev__toggle {
   font: 500 0.9rem var(--body);
   color: inherit;

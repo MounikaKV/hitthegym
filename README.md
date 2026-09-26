@@ -62,3 +62,17 @@ Vercel hosts just the pitch page. The project has `VITE_PITCH_ONLY=true` set for
 every path render the pitch page at `/`, and points its buttons (Try it, See a result, the examples) at the app
 running locally (`VITE_LOCAL_APP_URL`, default `http://localhost:5173`). The input and result pages are not in
 that build. Run `npm run dev` on the demo laptop for the rest of the flow.
+
+## Showing local Jev runs
+
+With `npm run dev` running, open `/result` with nothing passed in and it shows the **newest `.json` file in
+`jev-output/`** (by modified time). Write each Jev run there, e.g. `jev-output/2026-09-26T08-00.json`.
+
+- The file can be Jev's raw response (`{ model, answers, usage }`), or `{ "jev": <response>, "day": <state> }`
+  to also show steps left, pounds to go and the progress bar.
+- If the folder is empty, `src/data/jev-seed.json` is copied in as `jev-seed.json`.
+- The page updates live when a new file lands. No refresh needed.
+- Invalid or half-written files are skipped in favor of the next newest.
+- Change the folder with `JEV_OUTPUT_DIR=path npm run dev`. `jev-output/` is gitignored.
+
+A result passed explicitly (router state or `?d=`) still takes priority over the folder.

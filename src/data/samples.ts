@@ -1,12 +1,12 @@
 import type { DailyState, ResultPayload } from '../types/jev';
+import jevSeed from './jev-seed.json';
 
 export type Sample = ResultPayload & { name: string; blurb: string; day: DailyState };
 
 /**
- * Demo days for the landing page. The first is the real playground run on
- * jev-latest (probabilities for levels the playground didn't display are filled
- * in to match the shown score and confidence). The other two are illustrative:
- * hand-written answers in Jev's response format.
+ * Demo days for the landing page. The first is a real jev-1.13.0 run
+ * (jev-seed.json). The other two are illustrative: hand-written answers in
+ * Jev's response format.
  */
 export const SAMPLES: Sample[] = [
   {
@@ -31,50 +31,7 @@ export const SAMPLES: Sample[] = [
       activity: { steps_so_far_today: 4200, avg_steps_last_7_days: 6800, sleep_hours_last_night: 6.2 },
       engagement: { current_logging_streak_days: 5, days_since_last_weigh_in: 1 },
     },
-    jev: {
-      model: 'jev-latest',
-      answers: {
-        weight_trend: {
-          type: 'choice',
-          choice: 'losing',
-          probabilities: { losing: 1, plateaued: 0, gaining: 0, insufficient_data: 0 },
-          confidence: 1,
-        },
-        day_alignment: {
-          type: 'score',
-          score: 1.14,
-          probabilities: { '0': 0.1, '1': 0.68, '2': 0.2, '3': 0.02, '4': 0 },
-          confidence: 0.77,
-        },
-        exercise_intensity: {
-          type: 'score',
-          score: 2,
-          probabilities: { '0': 0, '1': 0, '2': 1, '3': 0 },
-          confidence: 1,
-        },
-        message_tone: {
-          type: 'choice',
-          choice: 'encouraging',
-          probabilities: {
-            encouraging: 0.68,
-            corrective_gentle: 0.28,
-            celebratory: 0.03,
-            corrective_direct: 0.005,
-            neutral_informational: 0.005,
-          },
-          confidence: 0.6,
-        },
-        needs_step_push: { type: 'noul', noul: 0.88 },
-        weigh_in_plausible: { type: 'noul', noul: 0.96 },
-        log_completeness: { type: 'noul', noul: 0.61 },
-        nutrient_focus: {
-          type: 'choice',
-          choice: 'fiber',
-          probabilities: { fiber: 0.55, reduce_alcohol: 0.33, protein: 0.11, reduce_sugar: 0.01, maintain: 0 },
-          confidence: 0.44,
-        },
-      },
-    },
+    jev: jevSeed,
   },
   {
     name: 'Strong week',
