@@ -55,3 +55,10 @@ Missing or malformed answers are skipped, so the page still renders with a parti
 - **Tiles**: weight trend, food, exercise, steps.
 - `weigh_in_plausible` < 0.5 shows a "re-weigh" alert.
 - Anything Jev answered with confidence < 0.5 is marked **likely** (dashed).
+
+## Deploy (pitch only)
+
+Vercel hosts just the pitch page. The project has `VITE_PITCH_ONLY=true` set for Production, which makes
+every path render the pitch page at `/`, and points its buttons (Try it, See a result, the examples) at the app
+running locally (`VITE_LOCAL_APP_URL`, default `http://localhost:5173`). The input and result pages are not in
+that build. Run `npm run dev` on the demo laptop for the rest of the flow.

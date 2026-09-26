@@ -1,13 +1,11 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { AppLink } from './AppLink';
 
-/** Where "Try it" goes: the in-app entry page, where people log their day. */
-export const INPUT_PATH = '/entry';
-
+/** Where "Try it" goes: the entry page, where people log their day. */
 export function InputLink({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <Link to={INPUT_PATH} className={className}>
+    <AppLink to="/entry" className={className}>
       {children}
-    </Link>
+    </AppLink>
   );
 }

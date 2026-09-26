@@ -6,8 +6,18 @@ import LandingPage from "./pages/LandingPage";
 import Result from "./pages/Result";
 import SettingsPage from "./pages/SettingsPage";
 import StatsPage from "./pages/StatsPage";
+import { PITCH_ONLY } from "./config";
 
 function App() {
+  // Hosted pitch site (Vercel): only the pitch page; the rest of the app runs locally.
+  if (PITCH_ONLY) {
+    return (
+      <Routes>
+        <Route path="*" element={<Landing />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
       <Route element={<AppLayout />}>

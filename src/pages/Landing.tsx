@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import '../styles/pitch.css';
 import { BriefingCard } from '../components/BriefingCard';
+import { AppLink } from '../components/AppLink';
 import { InputLink } from '../components/InputLink';
+import { PITCH_PATH } from '../config';
 import { SAMPLES } from '../data/samples';
 import { resultPath } from '../services/handoff';
 import { buildBriefing } from '../utils/briefing';
@@ -24,7 +26,7 @@ function Landing() {
   return (
     <div className="htg landing">
       <nav className="nav">
-        <Link to="/pitch" className="nav__logo">
+        <Link to={PITCH_PATH} className="nav__logo">
           HitTheGym
         </Link>
         <InputLink className="btn btn--small">Try it</InputLink>
@@ -38,9 +40,9 @@ function Landing() {
         <p className="hero__sub">Log your meals, workouts and weigh-in. Get a verdict and up to three things to do next.</p>
         <div className="hero__cta">
           <InputLink className="btn btn--solid">Log your day →</InputLink>
-          <Link to={resultPath(hero.sample)} className="btn btn--outline">
+          <AppLink to={resultPath(hero.sample)} className="btn btn--outline">
             See a result
-          </Link>
+          </AppLink>
         </div>
         <div className="hero__lights" aria-hidden="true">
           <span data-tone="good">On track.</span>
@@ -95,11 +97,11 @@ function Landing() {
         <p className="section__sub">Tap one to see the full result.</p>
         <div className="examples">
           {previews.map(({ sample, briefing }) => (
-            <Link key={sample.name} to={resultPath(sample)} className="example">
+            <AppLink key={sample.name} to={resultPath(sample)} className="example">
               <p className="example__name">{sample.name}</p>
               <p className="example__blurb">{sample.blurb}</p>
               <BriefingCard briefing={briefing} size="compact" />
-            </Link>
+            </AppLink>
           ))}
         </div>
       </section>
