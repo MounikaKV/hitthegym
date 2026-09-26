@@ -73,7 +73,7 @@ const WELCOME_MESSAGE: CoachMessage = {
 };
 
 // Thresholds are starting points for the demo; tune them on real examples.
-const THRESHOLDS = {
+export const THRESHOLDS = {
   concerning: 0.5,
   shouldNudge: 0.5,
   messageConfidence: 0.35,
@@ -244,21 +244,21 @@ function buildState(request: CoachRequest, facts: Record<string, string>) {
 // Policy
 // ---------------------------------------------------------------------------
 
-type Answer =
+export type Answer =
   | { type: "noul"; noul: number }
   | { type: "choice"; choice: string; confidence: number; probabilities: Record<string, number> }
   | { type: "score"; score: number; confidence: number; probabilities: Record<string, number> };
 
-function noul(answers: Record<string, Answer>, id: string): number | undefined {
+export function noul(answers: Record<string, Answer>, id: string): number | undefined {
   const answer = answers[id];
   return answer?.type === "noul" ? answer.noul : undefined;
 }
 
-function percent(value: number): string {
+export function percent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
-function summarize(answers: Record<string, Answer>): JevAnswerSummary[] {
+export function summarize(answers: Record<string, Answer>): JevAnswerSummary[] {
   return Object.entries(answers).map(([id, answer]) => {
     if (answer.type === "noul") {
       return { id, type: "noul", value: answer.noul.toFixed(2) };
