@@ -1,9 +1,18 @@
 import type { DailyEntry, LogCollection, LogEntry } from "../types/entry";
+import type { UserProfile } from "../types/review";
 
 const STORAGE_KEY = "hitthegym.entries.v1";
 const DEMO_SEEDED_KEY = "hitthegym.entries.demoSeeded.v1";
+const PROFILE_STORAGE_KEY = "hitthegym.profile.v1";
+const PROFILE_DEMO_SEEDED_KEY = "hitthegym.profile.demoSeeded.v1";
 
 type EntryMap = Record<string, DailyEntry>;
+
+const DEMO_PROFILE: UserProfile = {
+  goal_weight_lbs: 175,
+  starting_weight_lbs: 205,
+  daily_step_goal: 9000,
+};
 
 function getTodayKey(date = new Date()): string {
   const year = date.getFullYear();
@@ -167,6 +176,46 @@ export function ensureDemoHistorySeeded(): void {
   localStorage.setItem(DEMO_SEEDED_KEY, "1");
 }
 
+export function ensureDemoProfileSeeded(): void {
+  if (localStorage.getItem(PROFILE_DEMO_SEEDED_KEY) === "1") {
+    return;
+  }
+
+  const existing = localStorage.getItem(PROFILE_STORAGE_KEY);
+  if (!existing) {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(DEMO_PROFILE));
+  }
+
+  localStorage.setItem(PROFILE_DEMO_SEEDED_KEY, "1");
+}
+
+export function loadProfile(): UserProfile {
+  try {
+    const raw = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!raw) {
+      return DEMO_PROFILE;
+    }
+
+    const parsed = JSON.parse(raw) as Partial<UserProfile>;
+    return {
+      goal_weight_lbs:
+        typeof parsed.goal_weight_lbs === "number"
+          ? parsed.goal_weight_lbs
+          : DEMO_PROFILE.goal_weight_lbs,
+      starting_weight_lbs:
+        typeof parsed.starting_weight_lbs === "number"
+          ? parsed.starting_weight_lbs
+          : DEMO_PROFILE.starting_weight_lbs,
+      daily_step_goal:
+        typeof parsed.daily_step_goal === "number"
+          ? parsed.daily_step_goal
+          : DEMO_PROFILE.daily_step_goal,
+    };
+  } catch {
+    return DEMO_PROFILE;
+  }
+}
+
 function createEmptyDay(dateKey: string): DailyEntry {
   return {
     dateKey,
@@ -234,6 +283,17 @@ function normalizeDailyEntry(raw: unknown, dateKey: string): DailyEntry {
     foodEntries,
     updatedAt,
   };
+}
+
+export function loadAllEntries(): EntryMap {
+  const rawMap = readMap();
+  const normalized: EntryMap = {};
+
+  Object.entries(rawMap).forEach(([dateKey, value]) => {
+    normalized[dateKey] = normalizeDailyEntry(value, dateKey);
+  });
+
+  return normalized;
 }
 
 export function loadTodayEntry(): DailyEntry {

@@ -334,3 +334,12 @@ textarea {
 textarea::placeholder {
   color: rgba(36, 49, 79, 0.55);
 }
+
+.json-block {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(36, 49, 79, 0.95);
+}
