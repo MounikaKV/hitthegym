@@ -1,0 +1,58 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "weight_trend": {
+      "type": "choice",
+      "choice": "losing",
+      "confidence": 1,
+      "probabilities": { "gaining": 0, "losing": 1, "insufficient_data": 0, "plateaued": 0 }
+    },
+    "day_alignment": {
+      "type": "score",
+      "score": 1.14,
+      "confidence": 0.77,
+      "legend": {
+        "0": "Significantly over goal calories or very low quality choices",
+        "1": "Somewhat over goal or low quality choices",
+        "2": "Roughly on target, mixed quality",
+        "3": "On target with good quality choices",
+        "4": "Ideal: on target calories and high quality choices"
+      },
+      "probabilities": { "0": 0.07, "1": 0.73, "2": 0.19, "3": 0.01, "4": 0 }
+    },
+    "exercise_intensity": {
+      "type": "score",
+      "score": 2,
+      "confidence": 1,
+      "legend": {
+        "0": "No exercise logged",
+        "1": "Light activity (short walk, stretching)",
+        "2": "Moderate activity (brisk walk, easy jog, light cycling)",
+        "3": "Vigorous activity (hard run, HIIT, heavy lifting)"
+      },
+      "probabilities": { "0": 0, "1": 0, "2": 1, "3": 0 }
+    },
+    "message_tone": {
+      "type": "choice",
+      "choice": "encouraging",
+      "confidence": 0.6,
+      "probabilities": {
+        "encouraging": 0.68,
+        "celebratory": 0.03,
+        "neutral_informational": 0,
+        "corrective_direct": 0.01,
+        "corrective_gentle": 0.28
+      }
+    },
+    "needs_step_push": { "type": "noul", "noul": 0.88 },
+    "weigh_in_plausible": { "type": "noul", "noul": 0.96 },
+    "log_completeness": { "type": "noul", "noul": 0.61 },
+    "nutrient_focus": {
+      "type": "choice",
+      "choice": "fiber",
+      "confidence": 0.44,
+      "probabilities": { "protein": 0.11, "reduce_sugar": 0, "fiber": 0.55, "maintain": 0.01, "reduce_alcohol": 0.33 }
+    }
+  },
+  "usage": { "input_tokens": 1474, "output_tokens": 272 }
+}
