@@ -1,9 +1,14 @@
 import { useMemo } from "react";
+import JevLens from "../components/JevLens";
 import { VerdictButton } from "../components/VerdictButton";
+import { loadTodayEntry } from "../services/entryStorage";
 import { buildReviewPayload } from "../services/reviewData";
+import { getTimeOfDaySentence } from "../utils/timeOfDay";
 
 function ReviewPage() {
   const payload = useMemo(() => buildReviewPayload(), []);
+  const todayEntry = useMemo(() => loadTodayEntry(), []);
+  const timeOfDaySentence = useMemo(() => getTimeOfDaySentence(), []);
 
   return (
     <section className="page">
@@ -11,8 +16,13 @@ function ReviewPage() {
       <p>This is the data package for analysis.</p>
       <VerdictButton day={payload} />
 
-      <section className="history-card">
-        <p className="history-title">Summary</p>
+      <section className="card card--soft">
+        <p className="eyebrow">Summary</p>
+        <div className="chip-row">
+          <span className="chip">Date: {payload.date}</span>
+          <span className="chip">User: {payload.user_id}</span>
+          <span className="tone-badge tone-neutral">Data package</span>
+        </div>
         <p>
           Today: {payload.weight.today_lbs ?? "-"} lbs | 7-day avg:{" "}
           {payload.weight.seven_day_avg_lbs ?? "-"} lbs
@@ -26,10 +36,7 @@ function ReviewPage() {
         </p>
       </section>
 
-      <section className="history-card">
-        <p className="history-title">Payload</p>
-        <pre className="json-block">{JSON.stringify(payload, null, 2)}</pre>
-      </section>
+      <JevLens entry={todayEntry} timeOfDaySentence={timeOfDaySentence} />
     </section>
   );
 }
