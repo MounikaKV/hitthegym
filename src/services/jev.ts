@@ -1,4 +1,5 @@
 import type { WeatherContext } from "../types/weather";
+import { buildReviewPayload } from "./reviewData";
 
 export interface JevInput {
   userText: string;
@@ -36,7 +37,8 @@ export async function callJev(input: JevInput): Promise<JevResult> {
   const response = await fetch("/api/jev", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    // Include the day's logged data so Jev can use it alongside the text and weather.
+    body: JSON.stringify({ ...input, review: buildReviewPayload() }),
     signal: AbortSignal.timeout(15000),
   });
 
