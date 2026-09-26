@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { VerdictButton } from "../components/VerdictButton";
 import { buildReviewPayload } from "../services/reviewData";
 
 function ReviewPage() {
@@ -8,6 +9,7 @@ function ReviewPage() {
     <section className="page">
       <h1>Review</h1>
       <p>This is the data package for analysis.</p>
+      <VerdictButton day={payload} />
 
       <section className="history-card">
         <p className="history-title">Summary</p>

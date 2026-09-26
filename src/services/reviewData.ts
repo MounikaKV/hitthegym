@@ -142,7 +142,11 @@ export function buildReviewPayload(): ReviewPayload {
   const yesterdayEntry = entriesByDay[yesterdayKey];
 
   const allWeightValues = flattenWeights(entriesByDay);
-  const last7Weights = allWeightValues.slice(0, 7).map((item) => item.value);
+  // Oldest to newest, matching the Jev state format (today's weight is last).
+  const last7Weights = allWeightValues
+    .slice(0, 7)
+    .reverse()
+    .map((item) => item.value);
   const sevenDayAvg =
     last7Weights.length > 0
       ? Number(
