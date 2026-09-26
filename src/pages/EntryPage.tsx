@@ -309,7 +309,7 @@ function EntryPage() {
           </>
         )}
       </form>
-      <JevLens />
+      <JevLens entry={entryValues} timeOfDaySentence={getTimeOfDaySentence()} />
     </section>
   );
 }
