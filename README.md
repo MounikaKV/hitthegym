@@ -7,6 +7,8 @@ React + TypeScript + Vite.
 
 The Entry screen is HitTheGym: "Your day in. What matters out." Weather is optional context for a Jev decision, not a prerequisite for submitting a day.
 
+Try it out here:  https://hitthegym.vercel.app
+
 ## Jev integration
 
 Provide a server-side `POST /api/jev` endpoint. The browser sends JSON `{ "userText": string, "weather": WeatherContext | null }`; `weather` is null when location is denied, unsupported, pending, or the forecast fails. Do not put Jev credentials in Vite environment variables or frontend code. During local development, route `/api/jev` to your backend using your server or a Vite proxy. Without that endpoint the UI shows "Jev is unavailable" instead of inventing a recommendation.
