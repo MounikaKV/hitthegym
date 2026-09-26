@@ -12,6 +12,13 @@ import { parseJev } from '../utils/parseJev';
 const WALL_OF_TEXT = `Great job logging your day! It's clear you're making real progress toward your goals. Looking at your weight data, you've gone from 190.2 lbs to 187.4 lbs over the past week, which is a healthy and sustainable rate of loss, generally considered to be around 1–2 pounds per week. Your 7-day average of 189.1 lbs also confirms this downward trend. Your breakfast of black coffee and a banana is light, and while bananas provide potassium and quick energy, you may want to consider adding some protein to help with satiety. The chicken burrito bowl without rice was a smart swap that reduces refined carbohydrates, and the extra guacamole provides healthy monounsaturated fats, though it is calorie-dense. Dinner of two slices of pepperoni pizza and a beer is where things get a little more complicated. Pizza tends to be high in saturated fat and sodium, and alcohol provides "empty" calories that can also affect sleep quality, which is worth noting since you slept 6.2 hours last night. On the activity side, your 25-minute easy jog is a great moderate-intensity workout! However, at 4,200 steps you're currently below your daily goal of 9,000…`;
 
 const wallWords = WALL_OF_TEXT.split(/\s+/).length;
+
+const TEAM = [
+  { name: 'Hitesh', github: 'hitesh-vs' },
+  { name: 'Hamilton', github: 'bronkula' },
+  { name: 'Monika', github: 'immonika' },
+  { name: 'Mounika', github: 'MounikaKV' },
+];
 const previews = SAMPLES.map((s) => ({ sample: s, briefing: buildBriefing(parseJev(s.jev)!, s.day) }));
 
 function shownWords(b: ReturnType<typeof buildBriefing>) {
@@ -109,6 +116,21 @@ function Landing() {
       <section className="closer">
         <h2 className="closer__title">Just tell me what to do.</h2>
         <InputLink className="btn btn--solid-invert">Log your day →</InputLink>
+      </section>
+
+      <section className="section team">
+        <h2 className="section__title">Built by</h2>
+        <ul className="team__list">
+          {TEAM.map((m) => (
+            <li key={m.github}>
+              <a className="team__member" href={`https://github.com/${m.github}`} target="_blank" rel="noreferrer">
+                <img className="team__avatar" src={`https://github.com/${m.github}.png?size=160`} alt="" width={64} height={64} loading="lazy" />
+                <span className="team__name">{m.name}</span>
+                <span className="team__handle">@{m.github}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <footer className="footer">HitTheGym · Powered by Jev from TypeSafe · Not medical advice.</footer>
