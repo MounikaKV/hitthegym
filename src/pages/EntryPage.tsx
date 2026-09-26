@@ -1,3 +1,4 @@
+import JevLens from "../components/JevLens";
 import { useState } from "react";
 import {
   addTodayExerciseEntry,
@@ -240,6 +241,7 @@ function EntryPage() {
           </div>
         )}
       </form>
+      <JevLens />
     </section>
   );
 }
