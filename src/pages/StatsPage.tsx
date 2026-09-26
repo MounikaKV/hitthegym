@@ -44,10 +44,16 @@ function StatsPage() {
   return (
     <section className="page">
       <h1>Stats</h1>
+      <div className="chip-row">
+        <span className="chip">Date: {payload.date}</span>
+        <span className="chip">User: {payload.user_id}</span>
+        <span className="tone-badge tone-neutral">Detailed view</span>
+      </div>
 
       <article className="stats-board" aria-label="Detailed statistics">
-        <section className="stats-panel stats-grid-two">
+        <section className="stats-panel card stats-grid-two">
           <div>
+            <p className="eyebrow">Inputs</p>
             <h2>Profile</h2>
             <dl className="stats-kv">
               <div>
@@ -74,6 +80,7 @@ function StatsPage() {
           </div>
 
           <div>
+            <p className="eyebrow">Consistency</p>
             <h2>Engagement</h2>
             <dl className="stats-kv">
               <div>
@@ -92,7 +99,8 @@ function StatsPage() {
           </div>
         </section>
 
-        <section className="stats-panel">
+        <section className="stats-panel card">
+          <p className="eyebrow">Bodyweight</p>
           <h2>Weight Snapshot</h2>
           <dl className="stats-kv stats-kv-inline">
             <div>
@@ -119,8 +127,9 @@ function StatsPage() {
           </ul>
         </section>
 
-        <section className="stats-panel stats-grid-two">
+        <section className="stats-panel card stats-grid-two">
           <div>
+            <p className="eyebrow">Nutrition</p>
             <h2>Food Today</h2>
             {payload.food_log_today.length === 0 ? (
               <p className="stats-muted">No food entries</p>
@@ -137,6 +146,7 @@ function StatsPage() {
           </div>
 
           <div>
+            <p className="eyebrow">Training</p>
             <h2>Exercise Today</h2>
             {payload.exercise_log_today.length === 0 ? (
               <p className="stats-muted">No exercise entries</p>
@@ -158,7 +168,8 @@ function StatsPage() {
           </div>
         </section>
 
-        <section className="stats-panel">
+        <section className="stats-panel card">
+          <p className="eyebrow">Optional fields</p>
           <h2>Activity Fields</h2>
           <dl className="stats-kv stats-kv-inline">
             <div>
@@ -180,7 +191,8 @@ function StatsPage() {
           </dl>
         </section>
 
-        <section className="stats-panel">
+        <section className="stats-panel card">
+          <p className="eyebrow">Timeline</p>
           <h2>Recent History By Day</h2>
           <div className="stats-day-grid">
             {recentDays.map((day) => (

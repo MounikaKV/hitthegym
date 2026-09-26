@@ -1,4 +1,3 @@
-import JevLens from "../components/JevLens";
 import { useState } from "react";
 import {
   addTodayExerciseEntry,
@@ -60,7 +59,11 @@ function EntryPage() {
       return;
     }
 
-    const next = updateTodayLogEntry(editing.collection, editing.id, editing.text);
+    const next = updateTodayLogEntry(
+      editing.collection,
+      editing.id,
+      editing.text,
+    );
     setEntryValues(next);
     setEditing(null);
   }
@@ -91,13 +94,17 @@ function EntryPage() {
     );
   }
 
-  function renderHistory(collection: LogCollection, items: LogEntry[], emptyLabel: string) {
+  function renderHistory(
+    collection: LogCollection,
+    items: LogEntry[],
+    emptyLabel: string,
+  ) {
     const panelTitle = "Recent entries";
     const todayItems = items.filter((item) => isToday(item.createdAt));
 
     if (todayItems.length === 0) {
       return (
-        <section className="history-card" aria-live="polite">
+        <section className="history-card card card--soft" aria-live="polite">
           <p className="history-title">{panelTitle}</p>
           <div className="food-log">
             <p>{emptyLabel}</p>
@@ -107,7 +114,7 @@ function EntryPage() {
     }
 
     return (
-      <section className="history-card" aria-live="polite">
+      <section className="history-card card card--soft" aria-live="polite">
         <p className="history-title">{panelTitle}</p>
         <div className="food-log">
           {todayItems.map((entry) => {
@@ -309,7 +316,6 @@ function EntryPage() {
           </>
         )}
       </form>
-      <JevLens entry={entryValues} timeOfDaySentence={getTimeOfDaySentence()} />
     </section>
   );
 }

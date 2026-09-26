@@ -79,15 +79,17 @@ export default function JevLens({ entry, timeOfDaySentence }: JevLensProps) {
   }
 
   return (
-    <section className="jev-lens" aria-label="JevLens">
+    <section className="jev-lens card card--soft" aria-label="JevLens">
       <h2>JevLens</h2>
       <p>Uses your logged entries, time of day, and local weather.</p>
 
       <div className="jev-context-strip" aria-label="Jev context summary">
-        <span>{timeOfDaySentence}</span>
-        <span>{entry.weightEntries.length} weigh-ins</span>
-        <span>{entry.exerciseEntries.length} exercise logs</span>
-        <span>{entry.foodEntries.length} food logs</span>
+        <span className="chip">{timeOfDaySentence}</span>
+        <span className="chip">{entry.weightEntries.length} weigh-ins</span>
+        <span className="chip">
+          {entry.exerciseEntries.length} exercise logs
+        </span>
+        <span className="chip">{entry.foodEntries.length} food logs</span>
       </div>
 
       <button
@@ -111,7 +113,7 @@ export default function JevLens({ entry, timeOfDaySentence }: JevLensProps) {
         </p>
       )}
       {result && (
-        <section className="jev-result" aria-label="Jev's nudge">
+        <section className="jev-result card" aria-label="Jev's nudge">
           <span className="jev-eyebrow">Jev's nudge</span>
           <h2>{result.recommendation}</h2>
           <details className="jev-trace">
