@@ -83,3 +83,10 @@ export const QUESTIONS = {
     },
   },
 } as const;
+
+export const JEV_MODEL = 'jev-latest';
+
+/** Body for POST https://api.typesafe.ai/v1/systemone. Shared by the local dev bridge and the Vercel function. */
+export function buildJevRequest(day: unknown) {
+  return { state: day, model: JEV_MODEL, questions: QUESTIONS };
+}

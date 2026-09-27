@@ -3,7 +3,7 @@ import type { ServerResponse } from 'node:http'
 import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv, type Connect, type Plugin } from 'vite'
-import { QUESTIONS } from './src/data/questions.ts'
+import { buildJevRequest } from './src/data/questions.ts'
 
 /**
  * Local bridge between the app and Jev (dev and preview servers only).
@@ -70,14 +70,15 @@ function localJev(env: Record<string, string>): Plugin {
     const res = await fetch('https://api.typesafe.ai/v1/systemone', {
       method: 'POST',
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: day, model: 'jev-latest', questions: QUESTIONS }),
+      body: JSON.stringify(buildJevRequest(day)),
     })
     const text = await res.text()
     if (!res.ok) throw new Error(`Jev returned ${res.status}: ${text.slice(0, 300)}`)
     const file = `run-${id}.json`
     fs.mkdirSync(outDir, { recursive: true })
-    fs.writeFileSync(path.join(outDir, file), JSON.stringify({ jev: JSON.parse(text), day }, null, 2))
-    return { status: 'done', output: `${path.basename(outDir)}/${file}` }
+    const result = { jev: JSON.parse(text) as unknown, day }
+    fs.writeFileSync(path.join(outDir, file), JSON.stringify(result, null, 2))
+    return { status: 'done', output: `${path.basename(outDir)}/${file}`, result }
   }
 
   const json = (res: ServerResponse, status: number, body: unknown) => {
